@@ -1,4 +1,4 @@
-# Report — Concurrent CSV Data Processor
+# Report | Concurrent CSV Data Processor
 
 ## Summary
 
