@@ -43,6 +43,19 @@ Use Postman.
 
 Response is a JSON array containing `salaryBefore`, `raisePercent`, and `salaryAfter` for each employee.
 
+### How to use in Postman
+
+1. Set method to **POST**
+2. URL: `http://localhost:8080/api/process`
+3. Body: **none**
+4. Click **Send**
+
+### Concurrency
+
+- Uses a fixed thread pool (`ExecutorService`) to process employees in parallel.
+- Uses a `Semaphore` to limit how many tasks run the work section at the same time.
+- Uses a `ReentrantLock` to protect the shared results list while multiple threads add items.
+
 ## CSV input
 
 Default CSV is loaded from the classpath:
