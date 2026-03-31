@@ -2,7 +2,6 @@ package com.ga.concurrencyminiproject.controller;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,17 +10,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ga.concurrencyminiproject.io.EmployeeCsvReader;
 import com.ga.concurrencyminiproject.model.Employee;
-import com.ga.concurrencyminiproject.service.SalaryRules;
+import com.ga.concurrencyminiproject.service.ConcurrentEmployeeProcessor;
 
 @RestController
 @RequestMapping("/api")
 public class ProcessController {
 	private final EmployeeCsvReader employeeCsvReader;
-	private final SalaryRules salaryRules;
+	private final ConcurrentEmployeeProcessor concurrentEmployeeProcessor;
 
-	public ProcessController(EmployeeCsvReader employeeCsvReader, SalaryRules salaryRules) {
+	public ProcessController(EmployeeCsvReader employeeCsvReader, ConcurrentEmployeeProcessor concurrentEmployeeProcessor) {
 		this.employeeCsvReader = employeeCsvReader;
-		this.salaryRules = salaryRules;
+		this.concurrentEmployeeProcessor = concurrentEmployeeProcessor;
 	}
 
 	@PostMapping("/process")
@@ -29,19 +28,12 @@ public class ProcessController {
 		LocalDate today = LocalDate.now();
 		List<Employee> employees = employeeCsvReader.readAll();
 
-		List<SalaryChange> result = new ArrayList<>(employees.size());
-		for (Employee employee : employees) {
-			double raisePercent = salaryRules.calculateRaisePercent(employee, today);
-			double salaryAfter = salaryRules.calculateNewSalary(employee, today);
-			result.add(new SalaryChange(
-					employee.getId(),
-					employee.getName(),
-					employee.getSalary(),
-					raisePercent,
-					salaryAfter
-			));
+		try {
+			return concurrentEmployeeProcessor.processConcurrently(employees, today, 4);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new RuntimeException("Processing was interrupted", e);
 		}
-		return result;
 	}
 }
 
